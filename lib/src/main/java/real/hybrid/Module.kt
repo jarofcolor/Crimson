@@ -6,7 +6,7 @@ package real.hybrid
  *  ......
  * ]
  */
-class Module(val route: String, val name: String, val type: String,val version:Int) {
+class Module(val route: String, val name: String, type: String, val version: Int) {
     companion object {
         val modules = arrayListOf<Module>()
         fun register(module: Module) {
@@ -18,6 +18,6 @@ class Module(val route: String, val name: String, val type: String,val version:I
         }
     }
 
-    var launcher: ModuleLauncher? = null
-    var parser:ModuleParser? = null
+    var launcher: ModuleLauncher = if (type == "app") WebViewLauncher(this) else AssetsLauncher(this)
+    var parser: ModuleParser = ModuleParser(this)
 }

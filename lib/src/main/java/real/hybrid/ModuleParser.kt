@@ -1,7 +1,10 @@
 package real.hybrid
 
 import android.content.Context
+import android.net.Uri
 import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
@@ -9,8 +12,31 @@ import java.util.zip.ZipInputStream
 
 open class ModuleParser(private val module: Module) {
     //可实现自己的更新方法
-    open fun update(updateUrl:String): Boolean {
-        //Todo 调用网络下载
+    open fun update(context: Context, updateUrl: String): Boolean {
+        try {
+            val connection = URL(updateUrl).openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            //连接
+            connection.connect()
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val ins = connection.inputStream
+                val cacheFile = File(RealHybrid.getAppModuleCacheFile(context, module))
+                if (!cacheFile.parentFile.exists()) {
+                    cacheFile.parentFile.mkdirs()
+                }
+                val out = FileOutputStream(cacheFile)
+                val array = ByteArray(4 * 1024)
+                var len = 0
+                while (ins.read(array).also { len = it } != -1) {
+                    out.write(array, 0, len)
+                }
+                ins.close()
+                out.close()
+                return true
+            }
+        } catch (e: Exception) {
+        }
         return true
     }
 
@@ -53,8 +79,9 @@ open class ModuleParser(private val module: Module) {
         return try {
             val out = FileOutputStream(destPathCacheFile)
             val array = ByteArray(4 * 1028)
-            while (ins.read(array) != -1) {
-                out.write(array)
+            var len = 0
+            while (ins.read(array).also { len = it } != -1) {
+                out.write(array,0,len)
             }
             out.close()
             ins.close()
@@ -86,8 +113,9 @@ open class ModuleParser(private val module: Module) {
                 }
                 val out = FileOutputStream(outFile)
                 val array = ByteArray(4 * 1024)
-                while (ins.read(array) != 1) {
-                    out.write(array)
+                var len = 0
+                while (ins.read(array).also { len = it } != 1) {
+                    out.write(array,0,len)
                 }
                 ins.close()
                 out.close()
