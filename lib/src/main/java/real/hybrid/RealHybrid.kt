@@ -72,11 +72,15 @@ object RealHybrid {
     /**
      * 仅仅适用于Launcher为WebViewLauncher的Module
      */
-    fun startWebPage(context: Context, module: Module, page: String, params: String = ""): ModuleResult<WebView>? {
+    fun startPage(context: Context, module: Module, page: String): ModuleResult<WebView>? {
         if (module.launcher is WebViewLauncher) {
-            return (module.launcher as WebViewLauncher).startWebPage(context, page, params)
+            return (module.launcher as WebViewLauncher).startPage(context, page)
         }
         return null
+    }
+
+    fun startWebPage(context: Context, url: String): ModuleResult<WebView>? {
+        return WebViewResult(context, null, url)
     }
 
     fun modules(): List<Module> {
