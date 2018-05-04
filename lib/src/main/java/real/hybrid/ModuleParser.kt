@@ -44,7 +44,7 @@ open class ModuleParser(private val module: Module) {
     open fun parse(context: Context): Boolean {
         val assets = context.assets
         val list = assets.list("modules")
-        val zipName = list.firstOrNull { it == "${module.name}_${module.version}" }
+        val zipName = list.firstOrNull { it == "${module.name}_${module.version}.zip" }
         val zipNameSplit = zipName?.split("_")
 
         if (zipNameSplit == null || zipNameSplit.size != 2) {
@@ -52,9 +52,6 @@ open class ModuleParser(private val module: Module) {
         }
 
         val appDir = File(RealHybrid.getAppPath(context), "${module.name}${File.separator}${module.version}")
-        if (appDir.exists()) {
-            return true
-        }
 
         val destPathCacheFile = File(RealHybrid.getAppCachePath(context), zipName)
         if (!destPathCacheFile.exists()) {
@@ -98,8 +95,13 @@ open class ModuleParser(private val module: Module) {
             var zipEntry: ZipEntry? = null
             while (zipIn.nextEntry.let { zipEntry = it;it != null }) {
                 val outFile = File(destPathDir, zipEntry!!.name)
-                if (!outFile.parentFile.exists()) {
+
+                if(zipEntry!!.isDirectory){
                     outFile.mkdirs()
+                    continue
+                }
+                if (!outFile.parentFile.exists()) {
+                    outFile.parentFile.mkdirs()
                 }
 
                 val ins = zipFile.getInputStream(zipEntry)
@@ -107,14 +109,14 @@ open class ModuleParser(private val module: Module) {
                     //Todo 是否有更好更快的方法解决解压文件是否一致而无需重新解压？
                     if (outFile.length().toInt() == ins.available()) {
                         continue
+                    }else {
+                        outFile.delete()
                     }
-                } else {
-                    outFile.createNewFile()
                 }
                 val out = FileOutputStream(outFile)
                 val array = ByteArray(4 * 1024)
                 var len = 0
-                while (ins.read(array).also { len = it } != 1) {
+                while (ins.read(array).also { len = it } != -1) {
                     out.write(array,0,len)
                 }
                 ins.close()
@@ -122,6 +124,7 @@ open class ModuleParser(private val module: Module) {
             }
             true
         } catch (e: Exception) {
+            e.printStackTrace()
             false
         }
     }

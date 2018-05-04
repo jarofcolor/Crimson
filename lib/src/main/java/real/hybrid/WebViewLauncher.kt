@@ -5,7 +5,7 @@ import android.webkit.WebView
 
 class WebViewLauncher(private val module: Module) : ModuleLauncher(module) {
 
-    override fun launch(context: Context, params: String): ModuleResult<WebView> {
+    override fun launch(context: Context): ModuleResult<WebView> {
         return WebViewResult(context,module,"")
     }
 

@@ -12,7 +12,7 @@ object RealHybrid {
 
     private val tasks = ConcurrentHashMap<Module, () -> Unit>()
     private val updates = ConcurrentHashMap<Module, String>()
-    private val threadPool = Executors.newFixedThreadPool(10)
+    private val threadPool = Executors.newCachedThreadPool()
     private val mainHandler = Handler(Looper.getMainLooper())
 
     /**
@@ -31,6 +31,9 @@ object RealHybrid {
 
     /**
      * 设置是否需要更新
+     * @param [context] context object
+     * @param [module]
+     * @param [update] 更新地址，为空时设置 null
      */
     fun setUpdate(context: Context, module: Module, update: String?) {
         if (update == null)
@@ -39,8 +42,46 @@ object RealHybrid {
             updates[module] = update
     }
 
-    fun startModule(context: Context, url: String, params: String = "", update: (Boolean) -> Unit, result: (ModuleResult<*>?) -> Unit) {
-        val module = modules().find { it.route == url }
+    /**
+     * 一次性初始化解析所有模块
+     *  @param [call] 返回所有初始化成功的模块
+     */
+    fun parseModules(context: Context, call: (ArrayList<Module>) -> Unit) {
+        val run = {
+            val loadedModules = arrayListOf<Module>()
+            modules().forEach { module ->
+                val parser = module.parser
+                val updateUrl = updates[module]
+                if (updateUrl != null && parser.update(context, updateUrl)) {
+                    setUpdate(context, module, null)
+                }
+                if (parser.parse(context)) {
+                    loadedModules.add(module)
+                }
+            }
+            mainHandler.post {
+                call(loadedModules)
+            }
+
+            Unit
+        }
+
+        threadPool.execute(run)
+    }
+
+    /**
+     * 模块已经加载好的启动方式,需要先调用parseModules
+     */
+    fun startModule(context: Context, route: String): ModuleResult<*>? {
+        val module = modules().find { it.route == route } ?: return null
+        return module.launcher.launch(context)
+    }
+
+    /**
+     * 每个模块单独更新的启动方式
+     */
+    fun startModule(context: Context, route: String, update: (Boolean) -> Unit, result: (ModuleResult<*>?) -> Unit) {
+        val module = modules().find { it.route == route }
         if (module == null) {
             result(null)
             return
@@ -52,9 +93,10 @@ object RealHybrid {
                 mainHandler.post {
                     update(true)
                 }
+                setUpdate(context, module, null)
             }
             if (parser.parse(context)) {
-                mainHandler.post { result(module.launcher.launch(context, params)) }
+                mainHandler.post { result(module.launcher.launch(context)) }
             } else {
                 mainHandler.post { result(null) }
             }
@@ -80,7 +122,7 @@ object RealHybrid {
     }
 
     fun startWebPage(context: Context, url: String): ModuleResult<WebView>? {
-        return WebViewResult(context, null, url)
+        return WebViewResult(context, null, url, false)
     }
 
     fun modules(): List<Module> {

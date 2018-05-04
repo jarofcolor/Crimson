@@ -3,22 +3,19 @@ package real.hybrid
 import android.content.Context
 import android.webkit.WebView
 
-class WebViewResult(private val context: Context, private val module: Module?, private val page: String) : ModuleResult<WebView> {
+class WebViewResult(private val context: Context, private val module: Module?, private val page: String, private val crossDomain: Boolean = true) : ModuleResult<WebView> {
 
     private lateinit var webView: WebView
 
     override fun result(): WebView {
-        webView = HybridWebView(context)
+        webView = HybridWebView(context, crossDomain)
 
-        if (module == null) {
-            webView.loadUrl(page)
-            return webView
-        }
-
-        if (page.isEmpty()) {
-            webView.loadUrl("file:///${RealHybrid.getAppModulePath(context, module)}/index.html")
-        } else {
-            webView.loadUrl("file:///${RealHybrid.getAppModulePath(context, module)}/$page/index.html")
+        webView.post {
+            when {
+                module == null -> webView.loadUrl(page)
+                page.isEmpty() -> webView.loadUrl("file:///${RealHybrid.getAppModulePath(context, module)}/index.html")
+                else -> webView.loadUrl("file:///${RealHybrid.getAppModulePath(context, module)}/$page/index.html")
+            }
         }
         return webView
     }

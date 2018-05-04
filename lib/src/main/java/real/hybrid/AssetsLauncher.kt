@@ -3,7 +3,7 @@ package real.hybrid
 import android.content.Context
 
 class AssetsLauncher(private val module: Module) : ModuleLauncher(module) {
-    override fun launch(context: Context, params: String): ModuleResult<AssetsFilePicker> {
+    override fun launch(context: Context): ModuleResult<AssetsFilePicker> {
         return AssetsResult(context, module)
     }
 }
