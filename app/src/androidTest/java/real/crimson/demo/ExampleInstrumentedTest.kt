@@ -1,4 +1,4 @@
-package real.hybrid.demo
+package real.crimson.demo
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4

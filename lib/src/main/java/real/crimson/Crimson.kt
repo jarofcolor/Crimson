@@ -1,4 +1,4 @@
-package real.hybrid
+package real.crimson
 
 import android.content.Context
 import android.os.Handler
@@ -8,7 +8,7 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
-object RealHybrid {
+object Crimson {
 
     private val tasks = ConcurrentHashMap<Module, () -> Unit>()
     private val updates = ConcurrentHashMap<Module, String>()

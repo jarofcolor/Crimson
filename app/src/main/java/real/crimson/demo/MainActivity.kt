@@ -1,4 +1,4 @@
-package real.hybrid.demo
+package real.crimson.demo
 
 import android.os.Build
 import android.os.Bundle
@@ -10,10 +10,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import real.hybrid.Module
-import real.hybrid.RealHybrid
-import real.hybrid.WebViewResult
-
+import real.crimson.JsMethodHandler
+import real.crimson.Module
+import real.crimson.Crimson
+import real.crimson.WebViewResult
 class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -25,24 +25,36 @@ class MainActivity : AppCompatActivity() {
 
 
         val module = Module("af,sdk", "sdk", "app", 1)
-        RealHybrid.registerModule(module)
+        Crimson.registerModule(module)
 
         //第一种，先解析所有模块
         val dialog = AlertDialog.Builder(this).setCancelable(false).setMessage("正在加载中...").show()
-        RealHybrid.parseModules(this, {
+        Crimson.parseModules(this, {
             if (it.contains(module)) {
                 //可频繁调用
-                val moduleResult = RealHybrid.startModule(this, module.route)
+                val moduleResult = Crimson.startModule(this, module.route)
                 if (moduleResult != null) {
                     val result = moduleResult as WebViewResult
                     val webView = result.result()
                     webView.webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView?, url: String?) {
                             super.onPageFinished(view, url)
+                            //加载完成关闭对话
                             if (dialog.isShowing)
                                 dialog.dismiss()
                         }
                     }
+
+                    //注册解析打开模块子页面的JS方法
+                    val openPageHandler = object:JsMethodHandler(){
+                        override fun onJsCall(methodName: String, params: String) {
+                            //例如user子页面，此时params为user
+                            result.openPage(params)
+                        }
+                    }
+                    //操作完成后如果需要通知网页，则调用
+                    openPageHandler.callback()
+                    result.registerJsMethodHandler("openPage",openPageHandler)
                     val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                     container.addView(webView, params)
                 }
@@ -50,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         //第二种，解析某个模块并加载，不要频繁调用
-//        RealHybrid.startModule(this, "af,sdk", {
+//        Crimson.startModule(this, "af,sdk", {
 //            // 更新成功或失败
 //        }, {
 //            if (it != null) {
@@ -72,9 +84,9 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         val modules = arrayListOf<Module>()
-        modules.addAll(RealHybrid.modules())
+        modules.addAll(Crimson.modules())
         modules.forEach {
-            RealHybrid.unregisterModule(it)
+            Crimson.unregisterModule(it)
         }
     }
 }

@@ -1,4 +1,4 @@
-package real.hybrid
+package real.crimson
 
 import android.content.Context
 import android.webkit.WebView

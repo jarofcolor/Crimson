@@ -1,4 +1,4 @@
-package real.hybrid.demo
+package real.crimson.demo
 
 import org.junit.Test
 

@@ -1,7 +1,6 @@
-package real.hybrid
+package real.crimson
 
 import android.content.Context
-import android.net.Uri
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
@@ -21,7 +20,7 @@ open class ModuleParser(private val module: Module) {
             val responseCode = connection.responseCode
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 val ins = connection.inputStream
-                val cacheFile = File(RealHybrid.getAppModuleCacheFile(context, module))
+                val cacheFile = File(Crimson.getAppModuleCacheFile(context, module))
                 if (!cacheFile.parentFile.exists()) {
                     cacheFile.parentFile.mkdirs()
                 }
@@ -51,9 +50,9 @@ open class ModuleParser(private val module: Module) {
             return false
         }
 
-        val appDir = File(RealHybrid.getAppPath(context), "${module.name}${File.separator}${module.version}")
+        val appDir = File(Crimson.getAppPath(context), "${module.name}${File.separator}${module.version}")
 
-        val destPathCacheFile = File(RealHybrid.getAppCachePath(context), zipName)
+        val destPathCacheFile = File(Crimson.getAppCachePath(context), zipName)
         if (!destPathCacheFile.exists()) {
             val ins = assets.open("modules/$zipName")
             if (!destPathCacheFile.parentFile.exists()) {
