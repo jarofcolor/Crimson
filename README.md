@@ -30,69 +30,70 @@ ModuleResult是一个真正结果的代理对象，可以通过该对象执行�
 
 ```kotlin
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+       @RequiresApi(Build.VERSION_CODES.KITKAT)
+       override fun onCreate(savedInstanceState: Bundle?) {
+           super.onCreate(savedInstanceState)
+           setContentView(R.layout.activity_main)
 
-        WebView.setWebContentsDebuggingEnabled(true)
+           WebView.setWebContentsDebuggingEnabled(true)
 
 
-        val module = Module("af,sdk", "sdk", "app", 1)
-        RealHybrid.registerModule(module)
+           val module = Module("af,sdk", "sdk", "app", 1)
+           Crimson.registerModule(module)
 
-        //第一种，先解析所有模块
-        val dialog = AlertDialog.Builder(this).setCancelable(false).setMessage("正在加载中...").show()
-        RealHybrid.parseModules(this, {
-            if (it.contains(module)) {
-                //可频繁调用
-                val moduleResult = RealHybrid.startModule(this, module.route)
-                if (moduleResult != null) {
-                    val result = moduleResult as WebViewResult
-                    val webView = result.result()
-                    webView.webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            super.onPageFinished(view, url)
-                            //加载完成关闭对话
-                            if (dialog.isShowing)
-                                dialog.dismiss()
-                        }
-                    }
+           //第一种，先解析所有模块
+           val dialog = AlertDialog.Builder(this).setCancelable(false).setMessage("正在加载中...").show()
+           Crimson.parseModules(this, {
+               if (it.contains(module)) {
+                   //可频繁调用
+                   val moduleResult = Crimson.startModule(this, module.route)
+                   if (moduleResult != null) {
+                       val result = moduleResult as WebViewResult
+                       val webView = result.result()
+                       webView.webViewClient = object : WebViewClient() {
+                           override fun onPageFinished(view: WebView?, url: String?) {
+                               super.onPageFinished(view, url)
+                               //加载完成关闭对话
+                               if (dialog.isShowing)
+                                   dialog.dismiss()
+                           }
+                       }
 
-                    //注册解析打开模块子页面的JS方法
-                    val openPageHandler = object:JsMethodHandler(){
-                        override fun onJsCall(methodName: String, params: String) {
-                            //例如user子页面，此时params为user
-                            result.openPage(params)
-                        }
-                    }
-                    //操作完成后如果需要通知网页，则调用
-                    openPageHandler.callback()
-                    result.registerJsMethodHandler("openPage",openPageHandler)
-                    val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                    container.addView(webView, params)
-                }
-            }
-        })
+                       //注册解析打开模块子页面的JS方法
+                       val openPageHandler = object:JsMethodHandler(){
+                           override fun onJsCall(methodName: String, params: String) {
+                               //例如user子页面，此时params为user
+                               result.openPage(params)
+                           }
+                       }
+                       //操作完成后如果需要通知网页，则调用
+                       openPageHandler.callback()
+                       result.registerJsMethodHandler("openPage",openPageHandler)
+                       val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                       container.addView(webView, params)
+                   }
+               }
+           })
 
-        //第二种，解析某个模块并加载，不要频繁调用
-//        RealHybrid.startModule(this, "af,sdk", {
-//            // 更新成功或失败
-//        }, {
-//            if (it != null) {
-//                val result = (it as WebViewResult)
-//                val webView = result.result()
-//                webView.webViewClient = object : WebViewClient() {
-//                    override fun onPageFinished(view: WebView?, url: String?) {
-//                        super.onPageFinished(view, url)
-//                        if (dialog.isShowing)
-//                            dialog.dismiss()
-//                    }
-//                }
-//                val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-//                container.addView(webView, params)
-//            }
-//        })
-    }
+           //第二种，解析某个模块并加载，不要频繁调用
+   //        Crimson.startModule(this, "af,sdk", {
+   //            // 更新成功或失败
+   //        }, {
+   //            if (it != null) {
+   //                val result = (it as WebViewResult)
+   //                val webView = result.result()
+   //                webView.webViewClient = object : WebViewClient() {
+   //                    override fun onPageFinished(view: WebView?, url: String?) {
+   //                        super.onPageFinished(view, url)
+   //                        if (dialog.isShowing)
+   //                            dialog.dismiss()
+   //                    }
+   //                }
+   //                val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+   //                container.addView(webView, params)
+   //            }
+   //        })
+       }
     
 ```
 
@@ -167,10 +168,12 @@ webViewResult.registerJsMethodHandler("openPage",openPageHandler)
 
 多参数时，建议传递json字符串方便解析
 
-为了简洁，客户端只注册处理函数，并只作为接收者，不具备主动调用能力，所以需要主动调用的地方，可先由网页调用传入相关函数，如上文，当网页调用call时，传入的callbackName将使openPageHandler具有调用相关JavaScript方法的能力，该句柄可以随时在其它地方主动调用
+为了简洁，客户端只注册处理函数，并只作为接收者，不具备主动调用能力，所以需要主动调用的地方，可先由网页调用传入相关函数，如上文，当网页调用window.crimson.call("openPage",'callbackName","sdk")时，传入的callbackName将使openPageHandler具有调用相关JavaScript方法的能力，该句柄可以随时在其它地方主动调用
+
 
 ```kotlin
-openPageHandler.callback("xx")
+//回调Javascript callbackName 方法
+openPageHandler.callback("xx")  //等同于 javascript:callbackName("xxxx")
 ```
 
 
