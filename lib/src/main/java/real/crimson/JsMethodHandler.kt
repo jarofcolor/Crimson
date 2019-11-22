@@ -11,9 +11,9 @@ abstract class JsMethodHandler {
      */
     fun callback(params: String = "") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView?.evaluateJavascript("javascript:$callbackName($params)", {
+            webView?.evaluateJavascript("javascript:$callbackName($params)") {
                 //ignored 所有的采用异步回调
-            })
+            }
         } else {
             webView?.loadUrl("javascript:$callbackName($params)")
         }

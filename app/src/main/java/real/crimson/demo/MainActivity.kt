@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
 
         //第一种，先解析所有模块
         val dialog = AlertDialog.Builder(this).setCancelable(false).setMessage("正在加载中...").show()
-        Crimson.parseModules(this, {
+        Crimson.parseModules(this) {
             if (it.contains(module)) {
                 //可频繁调用
                 val moduleResult = Crimson.startModule(this, module.route)
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     container.addView(webView, params)
                 }
             }
-        })
+        }
 
         //第二种，解析某个模块并加载，不要频繁调用
 //        Crimson.startModule(this, "af,sdk", {
