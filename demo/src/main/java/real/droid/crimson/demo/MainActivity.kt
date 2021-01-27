@@ -45,12 +45,12 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    //注册JS处理器
+                    //创建JS处理器
                     val receiveMsgHandler = object : JsMethodHandler("receiveMsg", "setResult") {
                         override fun onJsCall(handler: JsMethodHandler, methodName: String, params: String) {
                             Toast.makeText(this@MainActivity, "收到来自网页的内容:$params", Toast.LENGTH_SHORT).show()
                             //通知结果给网页
-                            handler.callback("收到客户端的返回：" + System.currentTimeMillis())
+                            handler.callback("客户端返回的数据：" + System.currentTimeMillis())
                         }
                     }
                     result.registerJsMethodHandler(receiveMsgHandler)

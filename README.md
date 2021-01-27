@@ -35,8 +35,34 @@ dependencies {
     Crimson.startModule(context, module.route) 
 ```
 
+### 4、启动后注册JS处理函数
 
-### 4、完整示例
+```kotlin
+    val moduleResult = Crimson.startModule(this, module.route)
+    val result = moduleResult as WebViewResult
+    //创建JS处理器
+    val receiveMsgHandler = object : JsMethodHandler("receiveMsg","setResult") {
+        override fun onJsCall(handler: JsMethodHandler,methodName: String, params: String) {
+            Toast.makeText(this@MainActivity, "收到来自网页的内容:$params", Toast.LENGTH_SHORT).show()
+            //通知结果给网页
+            handler.callback("客户端返回的数据：" + System.currentTimeMillis())
+        }
+    }
+    //注册一个处理器
+    result.registerJsMethodHandler(receiveMsgHandler)
+```
+
+上面示例中，js代码通过`window.crimson.call("receiveMsg","这是一条来自网页的数据")`传递数据到客户端，客户端在接收数据后，通过`handler.callback("客户端返回的数据：" + System.currentTimeMillis())`将数据传递到网页，网页中需要有
+
+``` javascript
+function setResult(data){
+    console.log(data)
+}
+```
+
+来接收客户端的数据
+
+### 5、完整示例
 
 ```kotlin
     val module = Module("m.demo", "demo", "app", 1)
@@ -58,7 +84,7 @@ dependencies {
                     }
                 }
 
-                //注册JS处理器
+                //创建JS处理器
                 val receiveMsgHandler = object : JsMethodHandler("receiveMsg","setResult") {
                     override fun onJsCall(handler: JsMethodHandler,methodName: String, params: String) {
                         Toast.makeText(this@MainActivity, "收到来自网页的内容:$params", Toast.LENGTH_SHORT).show()
