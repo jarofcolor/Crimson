@@ -1,8 +1,8 @@
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-def siteUrl = 'https://github.com/jarofcolor/droid-libx.git' // 项目的主页
-def gitUrl = 'https://github.com/jarofcolor/droid-libx.git' // Git仓库的url
+def siteUrl = 'https://github.com/jarofcolor/Crimson.git' // 项目的主页
+def gitUrl = 'https://github.com/jarofcolor/Crimson.git' // Git仓库的url
 
 group = POM_GROUP_ID
 archivesBaseName = POM_ARTIFACT_ID
