@@ -1,0 +1,95 @@
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+def siteUrl = 'https://github.com/jarofcolor/droid-libx.git' // 项目的主页
+def gitUrl = 'https://github.com/jarofcolor/droid-libx.git' // Git仓库的url
+
+group = POM_GROUP_ID
+archivesBaseName = POM_ARTIFACT_ID
+version = POM_VERSION
+
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            artifactId = POM_ARTIFACT_ID
+
+            project {
+                name POM_NAME
+                packaging POM_PACKAGING
+                url siteUrl
+
+                // Set your license
+                licenses {
+                    license {
+                        name 'Apache License 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'jarofcolor'
+                        name 'HuangLi'
+                        email 'jarofcolor@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+
+                if (project.hasProperty("mavenDependencies")) {
+                    def mavenDependencies = project.mavenDependencies
+                    dependencies {
+                        mavenDependencies.forEach { md ->
+                            dependency {
+                                groupId md.groupId
+                                artifactId md.artifactId
+                                version md.version
+                                scope md.scope
+                                if (md.type != null) {
+                                    type md.type
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    //archives javadocJar
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    pkg {
+        repo = "maven"
+        name = "$POM_GROUP_ID:$POM_ARTIFACT_ID"
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+
+}

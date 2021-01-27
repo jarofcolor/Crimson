@@ -1,4 +1,4 @@
-package real.crimson
+package real.droid.crimson
 
 import android.content.Context
 import java.io.*
@@ -36,7 +36,7 @@ open class ModuleParser(private val module: Module) {
             }
         } catch (e: Exception) {
         }
-        return true
+        return false
     }
 
     //可实现自己的解析方法

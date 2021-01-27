@@ -1,4 +1,4 @@
-package real.crimson
+package real.droid.crimson
 
 import android.content.Context
 import android.webkit.WebView

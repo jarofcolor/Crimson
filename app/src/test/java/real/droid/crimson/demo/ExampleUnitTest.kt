@@ -1,4 +1,4 @@
-package real.crimson.demo
+package real.droid.crimson.demo
 
 import org.junit.Test
 

@@ -1,4 +1,4 @@
-package real.crimson
+package real.droid.crimson
 
 import android.content.Context
 import android.webkit.WebView
@@ -30,8 +30,8 @@ class WebViewResult(private val context: Context, private val module: Module?, p
     }
 
 
-    fun registerJsMethodHandler(methodName: String, handler: JsMethodHandler) {
-        webView.registerJsMethodHandler(methodName, handler)
+    fun registerJsMethodHandler(handler: JsMethodHandler) {
+        webView.registerJsMethodHandler(handler)
     }
 
     fun unregisterJsMethodHandler(methodName: String) {

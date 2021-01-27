@@ -1,8 +1,10 @@
-package real.crimson
+package real.droid.crimson
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -39,29 +41,29 @@ class CrimsonWebView(context: Context, crossDomain: Boolean = true) : WebView(co
     }
 
     private val jsMethodHandles = hashMapOf<String, JsMethodHandler>()
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     inner class InnerJavaScriptInterface {
         /**
          * @param [methodName]] 本地方法名
-         * @param [callbackName]] JavaScript 方法名，表示[methodName]相关函数处理后，Native代码回调相关JavaScript来通知
          * @see JsMethodHandler
          * @param [params]] JavaScript调用本地方法时的传入参数
          *
          * 本方法在网页上使用 window.crimson.call("xx",'xx","xxx")
          */
         @JavascriptInterface
-        fun call(methodName: String, callbackName: String, params: String) {
+        fun call(methodName: String, params: String) {
             if (methodName.isEmpty()) return
             val handler = jsMethodHandles[methodName]
-            handler?.callbackName = callbackName
-            handler?.webView = this@CrimsonWebView
-            handler?.onJsCall(methodName, params)
+            mainHandler.post { handler?.onJsCall(handler, methodName, params) }
         }
     }
 
-    fun registerJsMethodHandler(methodName: String, handler: JsMethodHandler) {
-        if (methodName.isNotEmpty())
-            jsMethodHandles[methodName] = handler
+    fun registerJsMethodHandler(handler: JsMethodHandler) {
+        if (!jsMethodHandles.containsKey(handler.nativeMethodName)) {
+            jsMethodHandles[handler.nativeMethodName] = handler
+            handler.webView = this
+        }
     }
 
     fun unregisterJsMethodHandler(methodName: String) {

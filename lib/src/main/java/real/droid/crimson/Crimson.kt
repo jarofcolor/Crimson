@@ -1,4 +1,4 @@
-package real.crimson
+package real.droid.crimson
 
 import android.content.Context
 import android.os.Handler
@@ -78,7 +78,7 @@ object Crimson {
     }
 
     /**
-     * 每个模块单独更新的启动方式
+     * 模块未加载好的启动方式
      */
     fun startModule(context: Context, route: String, update: (Boolean) -> Unit, result: (ModuleResult<*>?) -> Unit) {
         val module = modules().find { it.route == route }
