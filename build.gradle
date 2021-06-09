@@ -10,7 +10,6 @@ buildscript {
         classpath 'com.android.tools.build:gradle:3.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7'
     }
 }
 
@@ -23,16 +22,4 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-task makeReadme(group: "readme") {
-    def readmeFile = new File(projectDir, "README.md")
-    def readmeText = readmeFile.getText("utf-8")
-    def replaceText = readmeText
-    replaceText = replaceText.replaceAll("'real.droid:crimson:\\S+'", "'real.droid:crimson:${findProject("crimson").POM_VERSION}'")
-    if (replaceText != readmeText) {
-        BufferedWriter writer = readmeFile.newWriter("utf-8")
-        writer.write(replaceText)
-        writer.close()
-    }
 }

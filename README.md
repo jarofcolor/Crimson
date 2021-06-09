@@ -6,9 +6,18 @@
 
 ## 如何导入
 
+增加
+``` gradle
+    repositories {
+			...
+			maven { url 'https://jitpack.io' }
+	}
+```
+
+引入
 ``` gradle
 dependencies {
-    implementation 'real.droid:crimson:1.0.0'
+    implementation 'com.github.jarofcolor:Crimson:1.0.0'
 }
 ```
 
